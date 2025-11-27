@@ -147,7 +147,11 @@ export default function EntryForm({ mode, id, selectedDate }: Props) {
               <FormItem>
                 <FormLabel>Cover Image (optional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="Paste an image URL..." {...field} />
+                  <Input
+                    placeholder="Paste an image URL..."
+                    {...field}
+                    value={field.value ?? ""}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
