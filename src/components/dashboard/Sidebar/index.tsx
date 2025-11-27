@@ -24,14 +24,14 @@ export default function Sidebar({ className }: Props) {
               variant="nav"
               size="lg"
               className={cn(
-                "w-full group justify-start hover:text-blue-400 relative transition-all",
-                isActive && "bg-background text-blue-400",
+                "w-full group justify-start hover:text-fuchsia-400 relative transition-all",
+                isActive && "bg-background text-fuchsia-400",
               )}
               asChild
             >
               <UnstyledLink href={menu.url}>
                 {isActive && (
-                  <span className="absolute left-0 top-0 h-full w-1 bg-blue-400 rounded-r-lg" />
+                  <span className="absolute left-0 top-0 h-full w-1 bg-fuchsia-400 rounded-r-lg" />
                 )}
 
                 <menu.icon className={cn("mr-2 h-5 w-5 transition-all")} />

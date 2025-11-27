@@ -31,7 +31,7 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient min-h-screen flex flex-col lg:p-16 lg:px-24`}
         >
           <main className="lg:rounded-xl grow lg:shadow-2xl lg:layout overflow-hidden flex">
-            <Sidebar className="bg-blue-50" />
+            <Sidebar className="bg-fuchsia-50" />
             <section className="w-full p-10 bg-background">{children}</section>
           </main>
         </body>
