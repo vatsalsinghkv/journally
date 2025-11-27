@@ -3,10 +3,13 @@
 import EntryCard from "@/components/entries/EntryCard";
 import { useJournal } from "@/lib/hooks/use-journal";
 
-export default function EntriesPage() {
+export default function FavoriteEntriesPage() {
   const { entries } = useJournal();
 
-  if (entries.length === 0) {
+  console.log({ entries });
+  const favouriteEntries = entries.filter((entry) => entry.isFavorite);
+
+  if (favouriteEntries.length === 0) {
     return (
       <div className="text-center text-muted-foreground py-10">
         No entries yet — start writing your first thought ✨
@@ -16,7 +19,7 @@ export default function EntriesPage() {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {entries.map((entry) => (
+      {favouriteEntries.map((entry) => (
         <EntryCard key={entry.id} {...entry} />
       ))}
     </div>

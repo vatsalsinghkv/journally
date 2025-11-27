@@ -1,5 +1,5 @@
 "use client";
-import { UnstyledLink } from "@/components/shared";
+import { Logo, UnstyledLink } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { cn, isActivePath } from "@/lib/utils";
 import { Book, Calendar, Feather, Heart, LucideIcon } from "lucide-react";
@@ -12,7 +12,7 @@ export default function Sidebar({ className }: Props) {
 
   return (
     <aside className={cn(className, "w-80 p-10 px-5 flex flex-col")}>
-      <h1 className="text-2xl font-bold tracking-tight">Journally</h1>
+      <Logo name="Journally" className="text-2xl font-bold" />
 
       <nav className="mt-10 text-muted-foreground space-y-1">
         {MENU.map((menu) => {
@@ -64,7 +64,7 @@ const MENU: MenuType[] = [
   },
   {
     title: "My Favourites",
-    url: "/favourites",
+    url: "/entries/favourites",
     icon: Heart,
   },
   {

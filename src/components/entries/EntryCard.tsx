@@ -1,12 +1,15 @@
+"use client";
+
 import Image from "next/image";
-
 import { cn } from "@/lib/utils";
-
 import UnstyledLink, {
   UnstyledLinkProps,
 } from "@/components/shared/UnstyledLink";
 
-import { EntryType } from "@/lib/models/entry";
+import { Heart } from "lucide-react";
+import { useJournal } from "@/lib/hooks/use-journal";
+
+import type { EntryType } from "@/lib/models/entry";
 
 type Props = Omit<UnstyledLinkProps, "href"> & EntryType;
 
@@ -15,36 +18,66 @@ export default function EntryCard({
   title,
   id,
   content,
+  isFavorite,
   className,
   ...props
 }: Props) {
+  const { toggleFavorite } = useJournal();
+
+  function handleFavClick(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleFavorite(id);
+  }
+
   return (
-    <UnstyledLink
-      href={`/entries/${id}`}
-      className={cn("group rounded-md", className)}
-      {...props}
-    >
-      <div className="block overflow-hidden aspect-w-4 aspect-h-3 rounded-md">
-        <Image
-          width={450}
-          height={300}
+    <div className="relative">
+      {/* Fav Button */}
+      <button
+        type="button"
+        onClick={handleFavClick}
+        className={cn(
+          "absolute z-20 top-2 right-2 p-1 rounded-full",
+          "transition hover:scale-110",
+        )}
+      >
+        <Heart
+          size={18}
           className={cn(
-            "object-cover w-full h-full aspect-video",
-            "transition-all duration-200 transform group-hover:scale-110",
+            "transition",
+            isFavorite ? "fill-red-500 text-red-500" : "text-gray-400",
           )}
-          src={
-            coverImage ||
-            "https://images.unsplash.com/photo-1592271019141-b5c71a9cfd71?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mjh8fGpvdXJuYWx8ZW58MHx8MHx8fDA%3D"
-          }
-          alt={title}
         />
-      </div>
-      <h2 className="mt-4 text-base font-bold group-hover:text-blue-400">
-        {title}
-      </h2>
-      <p className="mt-2 text-sm text-muted-foreground">
-        {content.slice(0, 50)}...
-      </p>
-    </UnstyledLink>
+      </button>
+
+      <UnstyledLink
+        href={`/entries/${id}`}
+        className={cn("group rounded-md block", className)}
+        {...props}
+      >
+        <div className="block overflow-hidden aspect-w-4 aspect-h-3 rounded-md relative">
+          <Image
+            width={450}
+            height={300}
+            className={cn(
+              "object-cover w-full h-full aspect-video",
+              "transition-all duration-200 transform group-hover:scale-110",
+            )}
+            src={
+              coverImage ||
+              "https://images.unsplash.com/photo-1592271019141-b5c71a9cfd71?w=900&auto=format&fit=crop&q=60"
+            }
+            alt={title}
+          />
+        </div>
+
+        <h2 className="mt-4 text-base font-bold group-hover:text-blue-400">
+          {title}
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {content.slice(0, 50)}...
+        </p>
+      </UnstyledLink>
+    </div>
   );
 }

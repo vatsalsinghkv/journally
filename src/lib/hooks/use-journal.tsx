@@ -1,3 +1,4 @@
+// /lib/hooks/use-journal.tsx
 "use client";
 
 import {
@@ -7,30 +8,51 @@ import {
   useContext,
   useState,
 } from "react";
-
 import type { EntryType } from "@/lib/models/entry";
 
 interface JournalContextType {
   entries: EntryType[];
-  createEntry: (title: string, content: string, date: Date) => void;
-  updateEntry: (id: string, title: string, content: string, date: Date) => void;
+  createEntry: (
+    title: string,
+    content: string,
+    date: Date,
+    coverImage?: string | null,
+  ) => void;
+  updateEntry: (
+    id: string,
+    title: string,
+    content: string,
+    date: Date,
+    coverImage?: string | null,
+  ) => void;
   deleteEntry: (id: string) => void;
   getEntry: (id: string) => EntryType | null;
+  toggleFavorite: (id: string) => void;
 }
 
 const STORAGE_KEY = "journal-entries";
-
 export const JournalContext = createContext<JournalContextType | null>(null);
 
 export function JournalProvider({ children }: { children: React.ReactNode }) {
   const [entries, setEntries] = useState<EntryType[]>([]);
 
+  // Load + migrate saved entries to include isFavorite boolean
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) setEntries(JSON.parse(saved));
+      if (saved) {
+        const parsed: any[] = JSON.parse(saved);
+        // defensive migration: ensure isFavorite exists and is boolean
+        const migrated = parsed.map((e) => ({
+          ...e,
+          isFavorite: typeof e.isFavorite === "boolean" ? e.isFavorite : false,
+          coverImage: e.coverImage ?? "",
+        }));
+        setEntries(migrated);
+      }
     } catch (err) {
       console.error("Failed to load journal entries", err);
+      setEntries([]);
     }
   }, []);
 
@@ -44,12 +66,19 @@ export function JournalProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const createEntry = useCallback(
-    (title: string, content: string, date: Date) => {
+    (
+      title: string,
+      content: string,
+      date: Date,
+      coverImage: string | null = null,
+    ) => {
       const entry: EntryType = {
         id: Date.now().toString(),
         title,
         content,
         date: date.toISOString(),
+        coverImage: coverImage || "",
+        isFavorite: false,
       };
       saveEntries([entry, ...entries]);
     },
@@ -57,9 +86,26 @@ export function JournalProvider({ children }: { children: React.ReactNode }) {
   );
 
   const updateEntry = useCallback(
-    (id: string, title: string, content: string, date: Date) => {
+    (
+      id: string,
+      title: string,
+      content: string,
+      date: Date,
+      coverImage: string | null = null,
+    ) => {
       const updated = entries.map((e) =>
-        e.id === id ? { ...e, title, content, date: date.toISOString() } : e,
+        e.id === id
+          ? {
+              ...e,
+              title,
+              content,
+              date: date.toISOString(),
+              coverImage: coverImage ?? e.coverImage ?? "",
+              // preserve existing isFavorite boolean (if present)
+              isFavorite:
+                typeof e.isFavorite === "boolean" ? e.isFavorite : false,
+            }
+          : e,
       );
       saveEntries(updated);
     },
@@ -79,9 +125,26 @@ export function JournalProvider({ children }: { children: React.ReactNode }) {
     [entries],
   );
 
+  const toggleFavorite = useCallback(
+    (id: string) => {
+      const updated = entries.map((e) =>
+        e.id === id ? { ...e, isFavorite: !Boolean(e.isFavorite) } : e,
+      );
+      saveEntries(updated);
+    },
+    [entries, saveEntries],
+  );
+
   return (
     <JournalContext.Provider
-      value={{ entries, createEntry, updateEntry, deleteEntry, getEntry }}
+      value={{
+        entries,
+        createEntry,
+        updateEntry,
+        deleteEntry,
+        getEntry,
+        toggleFavorite,
+      }}
     >
       {children}
     </JournalContext.Provider>

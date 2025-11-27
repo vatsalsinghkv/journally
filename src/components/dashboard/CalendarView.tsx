@@ -24,14 +24,12 @@ export default function CalendarView() {
   return (
     <section className="space-y-4">
       {/* Month Header */}
-      <header className="flex items-center justify-between">
+      <header className="flex items-center justify-center gap-10">
         <Button variant="ghost" size="icon" onClick={prevMonth}>
           <ChevronLeft />
         </Button>
 
-        <h1 className="text-2xl font-bold">
-          {monthName} {year}
-        </h1>
+        <h1 className="h2 font-bold">{monthName}</h1>
 
         <Button variant="ghost" size="icon" onClick={nextMonth}>
           <ChevronRight />
@@ -39,19 +37,24 @@ export default function CalendarView() {
       </header>
 
       {/* Go to Today */}
-      <div className="flex justify-center">
-        <Button variant="outline" size="sm" onClick={goToToday}>
-          <RefreshCw className="w-4 h-4 mr-2" />
+      <div className="flex -mt-3 justify-center">
+        <Button
+          variant="ghost"
+          className="text-xs"
+          size="sm"
+          onClick={goToToday}
+        >
+          <RefreshCw className="w-2 h-2" />
           Today
         </Button>
       </div>
 
       {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 mt-2 gap-2">
         {weekDays.map((day) => (
           <div
             key={day}
-            className="text-center uppercase font-semibold text-muted-foreground text-sm"
+            className="text-center uppercase font-semibold text-muted-foreground text-xs"
           >
             {day}
           </div>

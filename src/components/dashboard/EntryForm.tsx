@@ -84,7 +84,7 @@ export default function EntryForm({ mode, id, selectedDate }: Props) {
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
-      <h1 className="text-3xl font-bold">
+      <h1 className="h2 font-bold">
         {mode === "create" ? "New Entry" : "Edit Entry"}
       </h1>
 
