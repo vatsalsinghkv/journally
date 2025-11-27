@@ -39,7 +39,7 @@ export default function EntryCard({
           alt={title}
         />
       </div>
-      <h2 className="mt-4 text-base font-bold group-hover:text-gradient-primary">
+      <h2 className="mt-4 text-base font-bold group-hover:text-blue-400">
         {title}
       </h2>
       <p className="mt-2 text-sm text-muted-foreground">

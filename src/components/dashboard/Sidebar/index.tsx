@@ -21,7 +21,7 @@ export default function Sidebar({ className }: Props) {
           return (
             <Button
               key={menu.title}
-              variant="ghost"
+              variant="nav"
               size="lg"
               className={cn(
                 "w-full group justify-start hover:text-blue-400 relative transition-all",

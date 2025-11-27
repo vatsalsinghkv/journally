@@ -136,6 +136,9 @@
   @apply bg-linear-to-br from-blue-100 to-fuchsia-100;
 }
 
+@utility text-gradient-primary {
+  @apply bg-linear-to-r from-blue-500 to-fuchsia-400 bg-clip-text text-transparent;
+}
 
 
 /* #region  /**=========== Typography =========== */
@@ -158,12 +161,4 @@
 
 @utility h4 {
   @apply text-base font-semibold md:text-lg;
-}
-
-@utility text-gradient-primary {
-  @apply bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent;
-}
-
-@utility text-gradient-secondary {
-  @apply bg-linear-to-r from-teal-400 to-teal-600 bg-clip-text text-transparent;
 }
