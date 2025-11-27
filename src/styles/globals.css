@@ -46,7 +46,7 @@
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --foreground: rgb(10, 10, 10);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -119,4 +119,51 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+
+
+@utility layout {
+  /* max-width: 80rem;
+  @apply mx-auto w-[99%] sm:w-11/12; */
+
+  /* 1100px */
+  max-width: 68.75rem;
+  @apply mx-auto w-11/12;
+}
+
+@utility bg-gradient {
+  @apply bg-linear-to-br from-blue-100 to-fuchsia-100;
+}
+
+
+
+/* #region  /**=========== Typography =========== */
+
+@utility h0 {
+  @apply text-balance font-semibold tracking-tight text-5xl md:text-6xl lg:text-[70px];
+}
+
+@utility h1 {
+  @apply text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl lg:leading-tight;
+}
+
+@utility h2 {
+  @apply font-semibold text-2xl md:text-3xl;
+}
+
+@utility h3 {
+  @apply text-lg font-semibold md:text-xl;
+}
+
+@utility h4 {
+  @apply text-base font-semibold md:text-lg;
+}
+
+@utility text-gradient-primary {
+  @apply bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent;
+}
+
+@utility text-gradient-secondary {
+  @apply bg-linear-to-r from-teal-400 to-teal-600 bg-clip-text text-transparent;
 }

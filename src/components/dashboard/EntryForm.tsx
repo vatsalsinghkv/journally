@@ -1,0 +1,164 @@
+"use client";
+
+import { useEffect } from "react";
+import { useJournal } from "@/lib/hooks/use-journal";
+import { useRouter } from "next/navigation";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import { EntrySchema, type EntryFormData } from "@/lib/models/entry";
+
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormControl,
+} from "@/components/ui/form";
+
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+
+interface Props {
+  mode: "create" | "edit";
+  id?: string;
+  selectedDate?: string;
+}
+
+export default function EntryForm({ mode, id, selectedDate }: Props) {
+  const { createEntry, updateEntry, getEntry } = useJournal();
+  const router = useRouter();
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  /* Form */
+  const form = useForm<EntryFormData>({
+    resolver: zodResolver(EntrySchema),
+    defaultValues: {
+      title: "",
+      content: "",
+      date: selectedDate || today,
+      coverImage: "",
+    },
+  });
+
+  /* Load data in edit mode */
+  useEffect(() => {
+    if (mode === "edit" && id) {
+      const entry = getEntry(id);
+      if (!entry) return;
+
+      form.setValue("title", entry.title);
+      form.setValue("content", entry.content);
+      form.setValue("date", entry.date.slice(0, 10));
+      form.setValue("coverImage", entry.coverImage || "");
+    }
+  }, [mode, id, getEntry, form]);
+
+  /* Submit */
+  function onSubmit(values: EntryFormData) {
+    const finalDate = new Date(values.date);
+
+    if (mode === "create") {
+      createEntry(
+        values.title,
+        values.content,
+        finalDate,
+        values.coverImage || null,
+      );
+    } else {
+      updateEntry(
+        id!,
+        values.title,
+        values.content,
+        finalDate,
+        values.coverImage || null,
+      );
+    }
+
+    router.push("/");
+  }
+
+  return (
+    <div className="mx-auto max-w-2xl space-y-5">
+      <h1 className="text-3xl font-bold">
+        {mode === "create" ? "New Entry" : "Edit Entry"}
+      </h1>
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* TITLE */}
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Title</FormLabel>
+                <FormControl>
+                  <Input placeholder="Entry title..." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* CONTENT */}
+          <FormField
+            control={form.control}
+            name="content"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Content</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Write your thoughts..."
+                    className="h-60"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* DATE */}
+          <FormField
+            control={form.control}
+            name="date"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Date</FormLabel>
+                <FormControl>
+                  <Input type="date" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* COVER IMAGE URL */}
+          <FormField
+            control={form.control}
+            name="coverImage"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Cover Image (optional)</FormLabel>
+                <FormControl>
+                  <Input placeholder="Paste an image URL..." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button type="submit">
+            {mode === "create" ? "Create Entry" : "Save Changes"}
+          </Button>
+        </form>
+      </Form>
+    </div>
+  );
+}
