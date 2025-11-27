@@ -1,11 +1,5 @@
 import { CalendarView } from "@/components/dashboard";
 
 export default function Home() {
-  return (
-    <>
-      <CalendarView />
-      {/* <Entries /> */}
-      {/* New Entry */}
-    </>
-  );
+  return <CalendarView />;
 }

@@ -1,7 +1,6 @@
 // app/entries/[id]/page.tsx
 
 import { notFound } from "next/navigation";
-import { Wrapper } from "@/components/layout";
 import EntryView from "@/components/entries/EntryView";
 
 interface Props {
@@ -17,9 +16,5 @@ export default async function EntryPage({ params }: Props) {
 
   if (!id) notFound();
 
-  return (
-    <Wrapper>
-      <EntryView id={id} />
-    </Wrapper>
-  );
+  return <EntryView id={id} />;
 }

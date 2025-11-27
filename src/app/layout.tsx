@@ -28,9 +28,9 @@ export default function RootLayout({
     <html lang="en" className="bg-blue-100">
       <Provider>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient min-h-screen flex flex-col p-16 px-24`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient min-h-screen flex flex-col lg:p-16 lg:px-24`}
         >
-          <main className="rounded-xl grow shadow-2xl overflow-hidden flex">
+          <main className="lg:rounded-xl grow lg:shadow-2xl lg:layout overflow-hidden flex">
             <Sidebar className="bg-blue-50" />
             <section className="w-full p-10 bg-background">{children}</section>
           </main>
