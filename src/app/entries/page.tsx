@@ -1,16 +1,24 @@
 "use client";
 
 import EntryCard from "@/components/entries/EntryCard";
+import { ErrorUI } from "@/components/shared";
+import Loader from "@/components/shared/Loader";
 import { useJournal } from "@/lib/hooks/use-journal";
 
 export default function EntriesPage() {
-  const { entries } = useJournal();
+  const { entries, isLoading } = useJournal();
+
+  if (isLoading) {
+    return <Loader />;
+  }
 
   if (entries.length === 0) {
     return (
-      <div className="text-center text-muted-foreground py-10">
-        No entries yet — start writing your first thought ✨
-      </div>
+      <ErrorUI
+        title="No entries yet"
+        description="start writing your first thought ✨"
+        cta={{ title: "Create your first entry!", href: "/entries/new" }}
+      />
     );
   }
 

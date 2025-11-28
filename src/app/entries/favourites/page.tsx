@@ -1,6 +1,7 @@
 "use client";
 
 import EntryCard from "@/components/entries/EntryCard";
+import { ErrorUI } from "@/components/shared";
 import { useJournal } from "@/lib/hooks/use-journal";
 
 export default function FavoriteEntriesPage() {
@@ -10,11 +11,7 @@ export default function FavoriteEntriesPage() {
   const favouriteEntries = entries.filter((entry) => entry.isFavorite);
 
   if (favouriteEntries.length === 0) {
-    return (
-      <div className="text-center text-muted-foreground py-10">
-        No entries yet — start writing your first thought ✨
-      </div>
-    );
+    return <ErrorUI title="No favourite entries yet!" />;
   }
 
   return (

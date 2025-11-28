@@ -29,7 +29,7 @@ interface Props {
 }
 
 export default function EntryForm({ mode, id, selectedDate }: Props) {
-  const { createEntry, updateEntry, getEntry } = useJournal();
+  const { addEntry, updateEntry, getEntry } = useJournal();
   const router = useRouter();
 
   const today = new Date().toISOString().slice(0, 10);
@@ -60,28 +60,25 @@ export default function EntryForm({ mode, id, selectedDate }: Props) {
     }
   }, [mode, id, getEntry, form]);
 
-  /* Submit */
   function onSubmit(values: EntryFormData) {
     const finalDate = new Date(values.date);
 
+    const entryPayload = {
+      id: id || crypto.randomUUID(),
+      title: values.title,
+      content: values.content,
+      date: finalDate.toISOString(),
+      coverImage: values.coverImage || "",
+      isFavorite: false,
+    };
+
     if (mode === "create") {
-      createEntry(
-        values.title,
-        values.content,
-        finalDate,
-        values.coverImage || null,
-      );
+      addEntry(entryPayload);
     } else {
-      updateEntry(
-        id!,
-        values.title,
-        values.content,
-        finalDate,
-        values.coverImage || null,
-      );
+      updateEntry(entryPayload);
     }
 
-    router.push("/");
+    router.push("/entries");
   }
 
   return (

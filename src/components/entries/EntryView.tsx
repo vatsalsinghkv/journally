@@ -1,57 +1,100 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useJournal } from "@/lib/hooks/use-journal";
 import { Button } from "@/components/ui/button";
-import { Edit } from "lucide-react";
+import { Edit, Trash } from "lucide-react";
 import { UnstyledLink } from "../shared";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Props {
   id: string;
 }
 
 const EntryView = ({ id }: Props) => {
-  const entry = useJournal().getEntry(id);
+  const { getEntry, deleteEntry } = useJournal();
+  const router = useRouter();
 
-  if (!entry) {
-    return <div className="p-10">Entry not found</div>;
-  }
+  const entry = getEntry(id);
+
+  if (!entry) return <div className="p-10">Entry not found</div>;
 
   const { title, date, content, coverImage } = entry;
 
+  const handleDelete = () => {
+    deleteEntry(id);
+    router.push("/entries");
+  };
+
   return (
     <div className="w-full h-full">
-      <div className="relative w-full h-64 md:h-80 ">
+      {/* COVER IMAGE */}
+      <div className="relative w-full h-64 md:h-80">
         <Image
           src={
             coverImage ||
             "https://images.unsplash.com/photo-1592271019141-b5c71a9cfd71?w=900&auto=format&fit=crop&q=60"
           }
-          alt="Cover Image"
+          alt="Cover"
           fill
           className="object-cover aspect-video w-full h-full"
           priority
         />
       </div>
 
-      {/* ---- PAGE CONTENT ---- */}
+      {/* PAGE CONTENT */}
       <div className="max-w-4xl mx-auto py-12">
-        {/* Title */}
-        <div className="flex items-center gap-5">
-          <h1 className="h2 mb-3">{title}</h1>
+        {/* Title + buttons */}
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="h2">{title}</h1>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            asChild
-            className="flex items-center gap-2"
-          >
-            <UnstyledLink href={`/entries/edit/${id}`}>
-              <Edit className="h-4 w-4" />
-              Edit
-            </UnstyledLink>
-          </Button>
+          <div className="flex items-center gap-3">
+            {/* Edit button */}
+            <Button variant="ghost" size="sm" asChild>
+              <UnstyledLink href={`/entries/edit/${id}`}>
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </UnstyledLink>
+            </Button>
+
+            {/* Delete button - Shadcn dialog */}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm">
+                  <Trash className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              </AlertDialogTrigger>
+
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete this entry?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. Your journal entry will be
+                    permanently removed.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete}>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
 
         {/* Meta */}
