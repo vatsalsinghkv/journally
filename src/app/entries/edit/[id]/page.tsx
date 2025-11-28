@@ -6,8 +6,8 @@ interface Props {
   };
 }
 
-export default function EditEntryPage({ params }: Props) {
-  const { id } = params;
+export default async function EditEntryPage({ params }: Props) {
+  const { id } = await params;
 
   return <EntryForm mode="edit" id={id} />;
 }

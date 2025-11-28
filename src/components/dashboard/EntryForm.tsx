@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { EntrySchema, type EntryFormData } from "@/lib/models/entry";
+import { EntryFormSchema, type EntryFormData } from "@/lib/models/entry";
 
 import {
   Form,
@@ -36,7 +36,7 @@ export default function EntryForm({ mode, id, selectedDate }: Props) {
 
   /* Form */
   const form = useForm<EntryFormData>({
-    resolver: zodResolver(EntrySchema),
+    resolver: zodResolver(EntryFormSchema),
     defaultValues: {
       title: "",
       content: "",
@@ -45,16 +45,18 @@ export default function EntryForm({ mode, id, selectedDate }: Props) {
     },
   });
 
-  /* Load data in edit mode */
+  /* Load existing entry (edit mode) */
   useEffect(() => {
     if (mode === "edit" && id) {
       const entry = getEntry(id);
       if (!entry) return;
 
-      form.setValue("title", entry.title);
-      form.setValue("content", entry.content);
-      form.setValue("date", entry.date.slice(0, 10));
-      form.setValue("coverImage", entry.coverImage || "");
+      form.reset({
+        title: entry.title,
+        content: entry.content,
+        date: entry.date.slice(0, 10),
+        coverImage: entry.coverImage ?? "",
+      });
     }
   }, [mode, id, getEntry, form]);
 
@@ -139,7 +141,7 @@ export default function EntryForm({ mode, id, selectedDate }: Props) {
             )}
           />
 
-          {/* COVER IMAGE URL */}
+          {/* COVER IMAGE */}
           <FormField
             control={form.control}
             name="coverImage"
@@ -158,7 +160,7 @@ export default function EntryForm({ mode, id, selectedDate }: Props) {
             )}
           />
 
-          <Button type="submit">
+          <Button type="submit" className="w-full">
             {mode === "create" ? "Create Entry" : "Save Changes"}
           </Button>
         </form>
