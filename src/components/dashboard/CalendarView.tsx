@@ -25,6 +25,14 @@ export default function CalendarView() {
     entriesByDate[key].push({ id: entry.id, title: entry.title });
   });
 
+  const firstDayOfMonth = new Date(
+    currentMonth.getFullYear(),
+    currentMonth.getMonth(),
+    1,
+  ).getDay(); // 0 = Sun, 1 = Mon ...
+
+  const leadingEmptyDays = Array.from({ length: firstDayOfMonth }, (_, i) => i);
+
   const daysArray = Array.from({ length: daysInMonth }, (_, i) => {
     const d = new Date(
       currentMonth.getFullYear(),
@@ -57,9 +65,15 @@ export default function CalendarView() {
           </div>
         ))}
 
-        {daysArray.map((day, i) => (
+        {/* Empty slots before month starts */}
+        {leadingEmptyDays.map((_, i) => (
+          <div key={`empty-${i + 1}`} />
+        ))}
+
+        {/* Actual days */}
+        {daysArray.map((day) => (
           <CalendarDay
-            key={i}
+            key={day.date.toISOString()}
             date={day.date}
             entries={day.entries}
             isToday={day.isToday}
