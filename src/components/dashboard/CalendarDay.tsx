@@ -8,10 +8,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
+
 import { Button } from "../ui/button";
 import { UnstyledLink } from "../shared";
-import { Feather, Plus } from "lucide-react";
+import { Feather } from "lucide-react";
 
 interface CalendarDayProps {
   date: Date;
