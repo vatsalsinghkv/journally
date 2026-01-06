@@ -35,8 +35,8 @@ export default function CalendarDay({
             "relative h-20 w-full rounded-lg p-2 text-left transition",
             "hover:bg-accent hover:text-accent-foreground",
             "flex flex-col gap-1 outline-none",
-            isToday && "border border-primary shadow-sm",
-            hasEntries && "bg-fuchsia-500/10 hover:bg-fuchsia-500/20",
+            isToday && "bg-fuchsia-500/20 hover:bg-fuchsia-500/30",
+            hasEntries && !isToday && "bg-gray-400/10 hover:bg-gray-400/20",
           )}
         >
           {/* Day number */}
@@ -44,7 +44,7 @@ export default function CalendarDay({
 
           {/* Entry count badge */}
           {hasEntries && (
-            <span className="absolute top-2 right-2 text-xs font-semibold rounded-full bg-fuchsia-400 text-primary-foreground px-2 py-0.5">
+            <span className="absolute top-2 right-2 text-xs font-semibold rounded-full bg-fuchsia-400/80 text-primary-foreground px-2 py-0.5">
               {entries.length}
             </span>
           )}
