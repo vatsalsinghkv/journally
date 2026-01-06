@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-
 import { useJournal } from "@/lib/hooks/use-journal";
 import CalendarHeader from "./CalendarHeader";
 import CalendarDay from "./CalendarDay";
 import { getDaysInMonth } from "@/lib/utils";
+import { getLocalDateKey } from "@/lib/utils";
 
 export default function CalendarView() {
   const { entries } = useJournal();
@@ -17,13 +17,23 @@ export default function CalendarView() {
 
   const daysInMonth = getDaysInMonth(currentMonth.getMonth());
 
-  // group entries by date for faster lookup
   const entriesByDate: Record<string, { id: string; title: string }[]> = {};
+
   entries.forEach((entry) => {
-    const key = entry.date.slice(0, 10);
+    const date = new Date(entry.date);
+    const key = getLocalDateKey(date);
+
     if (!entriesByDate[key]) entriesByDate[key] = [];
     entriesByDate[key].push({ id: entry.id, title: entry.title });
   });
+
+  const firstDayOfMonth = new Date(
+    currentMonth.getFullYear(),
+    currentMonth.getMonth(),
+    1,
+  ).getDay();
+
+  const leadingEmptyDays = Array.from({ length: firstDayOfMonth }, (_, i) => i);
 
   const daysArray = Array.from({ length: daysInMonth }, (_, i) => {
     const d = new Date(
@@ -31,7 +41,8 @@ export default function CalendarView() {
       currentMonth.getMonth(),
       i + 1,
     );
-    const key = d.toISOString().slice(0, 10);
+
+    const key = getLocalDateKey(d);
 
     return {
       date: d,
@@ -57,9 +68,13 @@ export default function CalendarView() {
           </div>
         ))}
 
-        {daysArray.map((day, i) => (
+        {leadingEmptyDays.map((_, i) => (
+          <div key={`empty-${i}`} />
+        ))}
+
+        {daysArray.map((day) => (
           <CalendarDay
-            key={i}
+            key={getLocalDateKey(day.date)}
             date={day.date}
             entries={day.entries}
             isToday={day.isToday}
