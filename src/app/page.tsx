@@ -1,5 +1,13 @@
-import { CalendarView } from "@/components/dashboard";
-
 export default function Home() {
-  return <CalendarView />;
+  return (
+    <div>
+      Landing Page
+      {/* Navbar */}
+      {/* Hero */}
+      {/* About */}
+      {/* Features */}
+      {/* FAQs */}
+      {/* Footer */}
+    </div>
+  );
 }

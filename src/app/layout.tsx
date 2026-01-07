@@ -25,15 +25,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="bg-blue-100">
+    <html lang="en">
       <Provider>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient min-h-screen flex flex-col lg:p-16 lg:px-24`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <main className="lg:rounded-xl grow lg:shadow-2xl lg:layout overflow-hidden flex">
-            <Sidebar className="bg-fuchsia-50" />
-            <section className="w-full p-10 bg-background">{children}</section>
-          </main>
+          {children}
         </body>
       </Provider>
     </html>
