@@ -51,7 +51,7 @@ export default function EntryCard({
       </button>
 
       <UnstyledLink
-        href={`/entries/${id}`}
+        href={`/dashboard/entries/${id}`}
         className={cn("group rounded-md block", className)}
         {...props}
       >

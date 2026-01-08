@@ -78,7 +78,7 @@ export default function EntryForm({ mode, id, selectedDate }: Props) {
       updateEntry(entryPayload);
     }
 
-    router.push("/entries");
+    router.push("/dashboard/entries");
   }
 
   return (

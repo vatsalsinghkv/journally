@@ -67,7 +67,7 @@ export default function CalendarDay({
                 asChild
               >
                 <UnstyledLink
-                  href={`/entries/${entry.id}`}
+                  href={`/dashboard/entries/${entry.id}`}
                   onClick={() => setOpen(false)}
                 >
                   <Feather className="mr-2 h-4 w-4 text-muted-foreground" />
@@ -87,7 +87,7 @@ export default function CalendarDay({
             asChild
           >
             <UnstyledLink
-              href={`/entries/new?date=${date.toISOString().slice(0, 10)}`}
+              href={`/dashboard/entries/new?date=${date.toISOString().slice(0, 10)}`}
               onClick={() => setOpen(false)}
             >
               <Plus className="mr-2 h-4 w-4" />

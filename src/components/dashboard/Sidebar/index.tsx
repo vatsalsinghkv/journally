@@ -2,13 +2,18 @@
 import { Logo, UnstyledLink } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { cn, isActivePath } from "@/lib/utils";
-import { Book, Calendar, Feather, Heart, LucideIcon } from "lucide-react";
+import { Book, Calendar, Feather, Heart, type LucideIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { NavUser } from "./NavUser";
+import { signOut, useSession } from "@/lib/services/auth-client";
+import { useRouter } from "next/navigation";
 
 interface Props extends React.HTMLAttributes<HTMLElement> {}
 
 export default function Sidebar({ className }: Props) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { data: session } = useSession();
 
   return (
     <aside className={cn(className, "w-80 p-10 px-5 flex flex-col")}>
@@ -41,6 +46,27 @@ export default function Sidebar({ className }: Props) {
           );
         })}
       </nav>
+
+      <footer className="mt-auto">
+        {session && (
+          <NavUser
+            user={{
+              name: session.user.name,
+              email: session.user.email,
+              avatar: session.user.image || "",
+            }}
+            onLogout={async () =>
+              await signOut({
+                fetchOptions: {
+                  onSuccess() {
+                    router.push("/");
+                  },
+                },
+              })
+            }
+          />
+        )}
+      </footer>
     </aside>
   );
 }
@@ -54,22 +80,22 @@ type MenuType = {
 const MENU: MenuType[] = [
   {
     title: "Calendar",
-    url: "/",
+    url: "/dashboard",
     icon: Calendar,
   },
   {
     title: "New Entry",
-    url: "/entries/new",
+    url: "/dashboard/entries/new",
     icon: Feather,
   },
   {
     title: "My Favourites",
-    url: "/entries/favourites",
+    url: "/dashboard/entries/favourites",
     icon: Heart,
   },
   {
     title: "All Entries",
-    url: "/entries",
+    url: "/dashboard/entries",
     icon: Book,
   },
 ];

@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/services/prisma";
 import React from "react";
 
 export default async function Posts() {

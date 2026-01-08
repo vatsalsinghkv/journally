@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { Edit, Trash } from "lucide-react";
 import { useJournal } from "@/lib/hooks/use-journal";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash } from "lucide-react";
 import { UnstyledLink } from "../shared";
 import {
   AlertDialog,
@@ -34,7 +34,7 @@ const EntryView = ({ id }: Props) => {
 
   const handleDelete = () => {
     deleteEntry(id);
-    router.push("/entries");
+    router.push("/dashboard/entries");
   };
 
   return (
@@ -62,7 +62,7 @@ const EntryView = ({ id }: Props) => {
           <div className="flex items-center gap-3">
             {/* Edit button */}
             <Button variant="ghost" size="sm" asChild>
-              <UnstyledLink href={`/entries/edit/${id}`}>
+              <UnstyledLink href={`/dashboard/entries/edit/${id}`}>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit
               </UnstyledLink>
