@@ -1,11 +1,26 @@
 "use client";
 
-import { Github, Mail } from "lucide-react";
+import { Github, Loader2, Mail } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { signIn } from "@/lib/services/auth-client";
 import { Logo } from "@/components/shared";
 
 export default function LogIn() {
+  const [loadingProvider, setLoadingProvider] = useState<
+    "github" | "google" | null
+  >(null);
+
+  const handleSocialSignIn = async (provider: "github" | "google") => {
+    setLoadingProvider(provider);
+    try {
+      await signIn.social({ provider, callbackURL: "/dashboard" });
+    } catch (err) {
+      console.error(err);
+      setLoadingProvider(null); // reset if error
+    }
+  };
+
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-gradient px-4">
       {/* Ambient glow */}
@@ -33,14 +48,14 @@ export default function LogIn() {
             size="lg"
             className="h-14 w-full gap-3 text-base"
             variant="secondary"
-            onClick={async () => {
-              await signIn.social({
-                provider: "github",
-                callbackURL: "/dashboard",
-              });
-            }}
+            onClick={() => handleSocialSignIn("github")}
+            disabled={loadingProvider !== null}
           >
-            <Github className="h-8 w-8" />
+            {loadingProvider === "github" ? (
+              <Loader2 className="animate-spin w-5 h-5" />
+            ) : (
+              <Github className="h-4 w-4" />
+            )}
             Sign up with GitHub
           </Button>
 
@@ -48,14 +63,14 @@ export default function LogIn() {
           <Button
             size="lg"
             className="h-14 w-full gap-3 text-base"
-            onClick={async () => {
-              await signIn.social({
-                provider: "google",
-                callbackURL: "/dashboard",
-              });
-            }}
+            onClick={() => handleSocialSignIn("google")}
+            disabled={loadingProvider !== null}
           >
-            <Mail className="h-8 w-8" />
+            {loadingProvider === "google" ? (
+              <Loader2 className="animate-spin w-5 h-5" />
+            ) : (
+              <Mail className="h-4 w-4" />
+            )}
             Sign up with Google
           </Button>
         </div>
