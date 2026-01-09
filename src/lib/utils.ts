@@ -40,3 +40,10 @@ export function isActivePath(pathname: string, url: string) {
   // "/entries/new" should only match "/entries/new"
   return pathname === url;
 }
+
+export function getNameInitials(name: string) {
+  return name
+    .split(" ")
+    .slice(0, 2)
+    .reduce((a, c) => a + c[0], "");
+}

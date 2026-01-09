@@ -3,18 +3,11 @@
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { signIn, useSession } from "@/lib/services/auth-client";
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function LogIn() {
-  const { data: session, isPending } = useSession();
+  const { isPending } = useSession();
   const router = useRouter();
-
-  useEffect(() => {
-    if (session) {
-      router.replace("/dashboard");
-    }
-  }, [session, router]);
 
   if (isPending) {
     return (
@@ -30,32 +23,24 @@ export default function LogIn() {
         <h1 className="text-xl font-semibold">Sign in</h1>
 
         <Button
-          onClick={() =>
-            signIn.social({
+          onClick={async () => {
+            await signIn.social({
               provider: "github",
-              fetchOptions: {
-                onSuccess() {
-                  router.replace("/dashboard");
-                },
-              },
-            })
-          }
+              callbackURL: "/dashboard",
+            });
+          }}
         >
           Continue with GitHub
         </Button>
 
         <Button
           variant="destructive"
-          onClick={() =>
-            signIn.social({
+          onClick={async () => {
+            await signIn.social({
               provider: "google",
-              fetchOptions: {
-                onSuccess() {
-                  router.replace("/dashboard");
-                },
-              },
-            })
-          }
+              callbackURL: "/dashboard",
+            });
+          }}
         >
           Continue with Google
         </Button>
