@@ -71,7 +71,7 @@ export default function EntryCard({
           />
         </div>
 
-        <h2 className="mt-4 text-base font-bold group-hover:text-blue-400">
+        <h2 className="mt-4 text-base font-bold group-hover:text-primary">
           {title}
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
