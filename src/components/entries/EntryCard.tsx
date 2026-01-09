@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import UnstyledLink, {
-  UnstyledLinkProps,
+  type UnstyledLinkProps,
 } from "@/components/shared/UnstyledLink";
 
 import { Heart } from "lucide-react";

@@ -6,7 +6,7 @@ export const EntrySchema = z.object({
   title: z.string().min(1, "Title is required"),
   content: z.string().min(1, "Content is required"),
   date: z.string().min(1, "Date is required"),
-  coverImage: z.string().optional().or(z.literal("")),
+  coverImage: z.string().nullable().or(z.literal("")),
   isFavorite: z.boolean().optional(),
 });
 
