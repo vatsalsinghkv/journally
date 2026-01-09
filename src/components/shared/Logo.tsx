@@ -1,13 +1,18 @@
 import { cn } from "@/lib/utils";
-import UnstyledLink, { UnstyledLinkProps } from "./UnstyledLink";
+import UnstyledLink, { type UnstyledLinkProps } from "./UnstyledLink";
 import { Feather } from "lucide-react";
 
 interface Props extends Omit<UnstyledLinkProps, "href" | "children"> {
-  name: string;
+  name?: string;
   href?: string;
 }
 
-export const Logo = ({ name, className, href = "/", ...rest }: Props) => {
+export const Logo = ({
+  name = "Journally",
+  className,
+  href = "/",
+  ...rest
+}: Props) => {
   return (
     <UnstyledLink
       href={href}

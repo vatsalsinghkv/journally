@@ -3,6 +3,7 @@
 import { Github, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { signIn } from "@/lib/services/auth-client";
+import { Logo } from "@/components/shared";
 
 export default function LogIn() {
   return (
@@ -16,8 +17,9 @@ export default function LogIn() {
       <div className="relative z-10 w-full max-w-lg rounded-3xl border bg-card p-10 shadow-2xl">
         {/* Header */}
         <div className="space-y-3 text-center">
+          <Logo className="mx-auto" />
           <h1 className="text-4xl font-semibold tracking-tight text-gradient-primary">
-            Welcome back
+            Welcome
           </h1>
           <p className="text-lg text-muted-foreground">
             Sign in to continue to your dashboard

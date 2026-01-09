@@ -6,3 +6,8 @@ export const authClient = createAuthClient({
 });
 
 export const { signIn, signUp, signOut, useSession } = createAuthClient();
+
+export const useCurrentUser = () => {
+  const { data: session } = useSession();
+  return session?.user || null;
+};

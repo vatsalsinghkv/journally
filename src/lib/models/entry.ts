@@ -17,7 +17,7 @@ export const EntryFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   content: z.string().min(1, "Content is required"),
   date: z.string().min(1, "Date is required"),
-  coverImage: z.string().optional().or(z.literal("")),
+  coverImage: z.string().or(z.literal("")).nullable(),
 });
 
 export type EntryFormData = z.infer<typeof EntryFormSchema>;

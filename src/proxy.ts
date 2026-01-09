@@ -1,21 +1,18 @@
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/services/auth";
+import { type NextRequest, NextResponse } from "next/server";
+import { getServerUser } from "@/lib/services/auth";
 import {
   API_AUTH_PREFIX,
   AUTH_ROUTES,
   DEFAULT_LOGIN_REDIRECT,
   PUBLIC_ROUTES,
 } from "@/lib/constants/routes";
-import { headers } from "next/headers";
 
 export async function proxy(req: NextRequest) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const user = await getServerUser();
 
   const nextUrl = req.nextUrl;
-  console.log({ session: session?.user });
-  const isLoggedIn = !!session?.user;
+
+  const isLoggedIn = !!user;
 
   console.log("LOGGED IN:", isLoggedIn);
 

@@ -5,7 +5,7 @@ import { cn, isActivePath } from "@/lib/utils";
 import { Book, Calendar, Feather, Heart, type LucideIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { NavUser } from "./NavUser";
-import { signOut, useSession } from "@/lib/services/auth-client";
+import { signOut, useCurrentUser } from "@/lib/services/auth-client";
 import { useRouter } from "next/navigation";
 
 interface Props extends React.HTMLAttributes<HTMLElement> {}
@@ -13,7 +13,7 @@ interface Props extends React.HTMLAttributes<HTMLElement> {}
 export default function Sidebar({ className }: Props) {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: session } = useSession();
+  const user = useCurrentUser();
 
   return (
     <aside className={cn(className, "w-80 p-10 px-5 flex flex-col")}>
@@ -48,16 +48,16 @@ export default function Sidebar({ className }: Props) {
       </nav>
 
       <footer className="mt-auto">
-        {session && (
+        {user && (
           <NavUser
             user={{
-              name: session.user.name,
-              email: session.user.email,
-              avatar: session.user.image || "",
+              name: user.name,
+              email: user.email,
+              avatar: user.image || "",
             }}
             onLogout={async () => {
               await signOut();
-              router.replace("/auth/login");
+              router.replace("/");
               router.refresh();
             }}
           />

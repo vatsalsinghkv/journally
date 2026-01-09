@@ -1,36 +1,53 @@
 "use client";
 
-import { createContext, useContext, useEffect, useReducer } from "react";
-import type { EntryType } from "../models/entry";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+  useTransition,
+} from "react";
 
-const STORAGE_KEY = "journal-entries";
+import type { EntryFormData } from "@/lib/models/entry";
+import {
+  getEntries,
+  createEntry,
+  updateEntry,
+  deleteEntry,
+  toggleFavorite,
+} from "@/actions/journal";
+import type { Entry } from "@/generated/prisma/client";
 
-/* -------------------- TYPES -------------------- */
+/* =========================================================
+   TYPES
+========================================================= */
 
 type JournalState = {
-  entries: EntryType[];
+  entries: Entry[];
   isLoading: boolean;
   error: string | null;
 };
 
 type JournalContextType = JournalState & {
-  addEntry: (entry: EntryType) => void;
-  updateEntry: (entry: EntryType) => void;
-  deleteEntry: (id: string) => void;
-  toggleFavorite: (id: string) => void;
-  getEntry: (id: string) => EntryType | null;
+  addEntry: (data: EntryFormData) => Promise<void>;
+  updateEntry: (data: EntryFormData) => Promise<void>;
+  deleteEntry: (id: string) => Promise<void>;
+  toggleFavorite: (id: string) => Promise<void>;
+  getEntry: (id: string) => Entry | null;
 };
 
 type Action =
   | { type: "LOAD_START" }
-  | { type: "LOAD_SUCCESS"; payload: EntryType[] }
+  | { type: "LOAD_SUCCESS"; payload: Entry[] }
   | { type: "LOAD_ERROR"; payload: string }
-  | { type: "ADD_ENTRY"; payload: EntryType }
-  | { type: "UPDATE_ENTRY"; payload: EntryType }
+  | { type: "ADD_ENTRY"; payload: Entry }
+  | { type: "UPDATE_ENTRY"; payload: Entry }
   | { type: "DELETE_ENTRY"; payload: string }
   | { type: "TOGGLE_FAVORITE"; payload: string };
 
-/* -------------------- REDUCER -------------------- */
+/* =========================================================
+   REDUCER
+========================================================= */
 
 function journalReducer(state: JournalState, action: Action): JournalState {
   switch (action.type) {
@@ -43,46 +60,45 @@ function journalReducer(state: JournalState, action: Action): JournalState {
     case "LOAD_ERROR":
       return { ...state, isLoading: false, error: action.payload };
 
-    case "ADD_ENTRY": {
-      const updated = [...state.entries, action.payload];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      return { ...state, entries: updated };
-    }
+    case "ADD_ENTRY":
+      return { ...state, entries: [action.payload, ...state.entries] };
 
-    case "UPDATE_ENTRY": {
-      const updated = state.entries.map((e) =>
-        e.id === action.payload.id ? action.payload : e,
-      );
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      return { ...state, entries: updated };
-    }
+    case "UPDATE_ENTRY":
+      return {
+        ...state,
+        entries: state.entries.map((e) =>
+          e.id === action.payload.id ? action.payload : e,
+        ),
+      };
 
-    case "DELETE_ENTRY": {
-      const updated = state.entries.filter((e) => e.id !== action.payload);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      return { ...state, entries: updated };
-    }
+    case "DELETE_ENTRY":
+      return {
+        ...state,
+        entries: state.entries.filter((e) => e.id !== action.payload),
+      };
 
-    case "TOGGLE_FAVORITE": {
-      const updated = state.entries.map((e) =>
-        e.id === action.payload
-          ? { ...e, isFavorite: !Boolean(e.isFavorite) }
-          : e,
-      );
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      return { ...state, entries: updated };
-    }
+    case "TOGGLE_FAVORITE":
+      return {
+        ...state,
+        entries: state.entries.map((e) =>
+          e.id === action.payload ? { ...e, isFavorite: !e.isFavorite } : e,
+        ),
+      };
 
     default:
       return state;
   }
 }
 
-/* -------------------- CONTEXT -------------------- */
+/* =========================================================
+   CONTEXT
+========================================================= */
 
 const JournalContext = createContext<JournalContextType | null>(null);
 
-/* -------------------- PROVIDER -------------------- */
+/* =========================================================
+   PROVIDER
+========================================================= */
 
 export function JournalProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(journalReducer, {
@@ -91,70 +107,84 @@ export function JournalProvider({ children }: { children: React.ReactNode }) {
     error: null,
   });
 
+  const [, startTransition] = useTransition();
+
+  /* -------- Load entries -------- */
+
   useEffect(() => {
     dispatch({ type: "LOAD_START" });
 
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const parsed: EntryType[] = raw ? JSON.parse(raw) : [];
+    startTransition(async () => {
+      const res = await getEntries();
 
-      // Migration: ensure optional fields exist
-      const migrated = parsed.map((e) => ({
-        ...e,
-        coverImage: e.coverImage ?? "",
-        isFavorite: typeof e.isFavorite === "boolean" ? e.isFavorite : false,
-      }));
-
-      // small delay — allows UI to show loader smoothly
-      setTimeout(() => {
-        dispatch({ type: "LOAD_SUCCESS", payload: migrated });
-      }, 150);
-    } catch {
-      dispatch({
-        type: "LOAD_ERROR",
-        payload: "Failed to load entries",
-      });
-    }
+      if (res.success) {
+        dispatch({ type: "LOAD_SUCCESS", payload: res.data });
+      } else {
+        dispatch({
+          type: "LOAD_ERROR",
+          payload: res.error ?? "Failed to load entries",
+        });
+      }
+    });
   }, []);
 
-  /* -------------------- ACTION WRAPPERS -------------------- */
+  /* -------- Actions -------- */
 
-  const addEntry = (entry: EntryType) =>
-    dispatch({ type: "ADD_ENTRY", payload: entry });
+  const addEntry = async (data: EntryFormData) => {
+    const res = await createEntry({
+      ...data,
+      date: new Date(data.date),
+    });
 
-  const updateEntry = (entry: EntryType) =>
-    dispatch({ type: "UPDATE_ENTRY", payload: entry });
+    console.log("createEntry res:", res);
 
-  const deleteEntry = (id: string) =>
-    dispatch({ type: "DELETE_ENTRY", payload: id });
-
-  const toggleFavorite = (id: string) =>
-    dispatch({ type: "TOGGLE_FAVORITE", payload: id });
-
-  const getEntry = (id: string): EntryType | null => {
-    const found = state.entries.find((e) => e.id === id);
-    if (found) return found;
-
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-
-      const parsed: EntryType[] = JSON.parse(raw);
-      const match = parsed.find((e) => e.id === id);
-      return match ?? null;
-    } catch {
-      return null;
+    if (res.success) {
+      dispatch({ type: "ADD_ENTRY", payload: res.data });
+    } else {
+      dispatch({ type: "LOAD_ERROR", payload: res.error });
     }
   };
+
+  const updateEntryHandler = async (data: EntryFormData) => {
+    console.log({ "updateEntry data": data });
+    const res = await updateEntry({ ...data, date: new Date(data.date) });
+
+    if (res.success) {
+      dispatch({ type: "UPDATE_ENTRY", payload: res.data });
+    } else {
+      dispatch({ type: "LOAD_ERROR", payload: res.error });
+    }
+  };
+
+  const deleteEntryHandler = async (id: string) => {
+    dispatch({ type: "DELETE_ENTRY", payload: id });
+
+    const res = await deleteEntry(id);
+    if (!res.success) {
+      dispatch({ type: "LOAD_ERROR", payload: res.error });
+    }
+  };
+
+  const toggleFavoriteHandler = async (id: string) => {
+    dispatch({ type: "TOGGLE_FAVORITE", payload: id });
+
+    const res = await toggleFavorite(id);
+    if (!res.success) {
+      dispatch({ type: "LOAD_ERROR", payload: res.error });
+    }
+  };
+
+  const getEntry = (id: string): Entry | null =>
+    state.entries.find((e) => e.id === id) ?? null;
 
   return (
     <JournalContext.Provider
       value={{
         ...state,
         addEntry,
-        updateEntry,
-        deleteEntry,
-        toggleFavorite,
+        updateEntry: updateEntryHandler,
+        deleteEntry: deleteEntryHandler,
+        toggleFavorite: toggleFavoriteHandler,
         getEntry,
       }}
     >
@@ -163,10 +193,10 @@ export function JournalProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-/* -------------------- HOOK -------------------- */
-
 export function useJournal(): JournalContextType {
   const ctx = useContext(JournalContext);
-  if (!ctx) throw new Error("useJournal must be used inside JournalProvider");
+  if (!ctx) {
+    throw new Error("useJournal must be used inside JournalProvider");
+  }
   return ctx;
 }

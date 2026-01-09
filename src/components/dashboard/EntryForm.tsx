@@ -54,7 +54,7 @@ export default function EntryForm({ mode, id, selectedDate }: Props) {
       form.reset({
         title: entry.title,
         content: entry.content,
-        date: entry.date.slice(0, 10),
+        date: entry.date.toISOString().slice(0, 10),
         coverImage: entry.coverImage ?? "",
       });
     }
