@@ -86,11 +86,12 @@ function Menu() {
 
           return (
             <NavigationMenuItem key={link.href}>
-              <Link href={link.href} legacyBehavior passHref>
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  {link.title}
-                </NavigationMenuLink>
-              </Link>
+              <NavigationMenuLink
+                href={link.href}
+                className={navigationMenuTriggerStyle()}
+              >
+                {link.title}
+              </NavigationMenuLink>
             </NavigationMenuItem>
           );
         })}

@@ -56,9 +56,13 @@ export default function Sidebar({ className }: Props) {
               avatar: user.image || "",
             }}
             onLogout={async () => {
-              await signOut();
-              router.replace("/");
-              router.refresh();
+              await signOut({
+                fetchOptions: {
+                  onSuccess() {
+                    router.push("/");
+                  },
+                },
+              });
             }}
           />
         )}
