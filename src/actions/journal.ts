@@ -54,19 +54,19 @@ export async function getEntry(id: string): Promise<ActionResult<Entry>> {
 
 export async function createEntry(
   data: Pick<Entry, "title" | "content" | "date" | "coverImage">,
+  id?: string,
 ): Promise<ActionResult<Entry>> {
   try {
-    console.log("createEntry data:", data);
     const user = await getServerUser();
 
     if (!user) {
       throw new Error("Unauthorized");
     }
-    console.log({ user });
 
     const entry = await prisma.entry.create({
       data: {
         ...data,
+        id: id || undefined,
         userId: user.id,
       },
     });
@@ -113,7 +113,7 @@ export async function updateEntry(
   }
 }
 
-export async function deleteEntry(id: string): Promise<ActionResult<null>> {
+export async function deleteEntry(id: string): Promise<ActionResult<Entry>> {
   try {
     const user = await getServerUser();
 
@@ -121,13 +121,13 @@ export async function deleteEntry(id: string): Promise<ActionResult<null>> {
       throw new Error("Unauthorized");
     }
 
-    await prisma.entry.deleteMany({
+    const entry = await prisma.entry.delete({
       where: { id, userId: user.id },
     });
 
     revalidatePath("/entries");
 
-    return { success: true, data: null };
+    return { success: true, data: entry };
   } catch (err) {
     console.error(err);
     return { success: false, error: "Failed to delete entry" };

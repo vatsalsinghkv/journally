@@ -4,6 +4,7 @@ import { Poppins } from "next/font/google";
 import "@/styles/globals.css";
 
 import { cn } from "@/lib/utils";
+import { Toaster } from "sonner";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -63,6 +64,7 @@ export default function RootLayout({
         )}
       >
         <main className="relative">{children}</main>
+        <Toaster richColors />
       </body>
     </html>
   );

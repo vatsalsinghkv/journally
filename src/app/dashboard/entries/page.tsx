@@ -17,7 +17,10 @@ export default function EntriesPage() {
       <ErrorUI
         title="No entries yet"
         description="start writing your first thought ✨"
-        cta={{ title: "Create your first entry!", href: "/entries/new" }}
+        cta={{
+          title: "Create your first entry!",
+          href: "/dashboard/entries/new",
+        }}
       />
     );
   }

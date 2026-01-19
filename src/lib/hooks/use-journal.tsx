@@ -17,9 +17,10 @@ import {
   toggleFavorite,
 } from "@/actions/journal";
 import type { Entry } from "@/generated/prisma/client";
+import { toast } from "sonner";
 
 /* =========================================================
-   TYPES
+ * TYPES
 ========================================================= */
 
 type JournalState = {
@@ -45,7 +46,7 @@ type Action =
   | { type: "TOGGLE_FAVORITE"; payload: string };
 
 /* =========================================================
-   REDUCER
+ * REDUCER
 ========================================================= */
 
 function journalReducer(state: JournalState, action: Action): JournalState {
@@ -87,13 +88,13 @@ function journalReducer(state: JournalState, action: Action): JournalState {
 }
 
 /* =========================================================
-   CONTEXT
+ * CONTEXT
 ========================================================= */
 
 const JournalContext = createContext<JournalContextType | null>(null);
 
 /* =========================================================
-   PROVIDER
+ * PROVIDER
 ========================================================= */
 
 export function JournalProvider({ children }: { children: React.ReactNode }) {
@@ -104,24 +105,26 @@ export function JournalProvider({ children }: { children: React.ReactNode }) {
 
   const [isPending, startTransition] = useTransition();
 
-  /* -------- Load entries -------- */
-
   useEffect(() => {
     startTransition(async () => {
-      const res = await getEntries();
+      try {
+        const res = await getEntries();
 
-      if (res.success) {
-        dispatch({ type: "LOAD_SUCCESS", payload: res.data });
-      } else {
+        if (res.success) {
+          dispatch({ type: "LOAD_SUCCESS", payload: res.data });
+        } else {
+          throw new Error(res.error ?? "Failed to load journal entries");
+        }
+      } catch (error) {
         dispatch({
           type: "LOAD_ERROR",
-          payload: res.error ?? "Failed to load entries",
+          payload: (error as Error).message ?? "Failed to load journal entries",
         });
+
+        toast.error("Failed to load journal entries");
       }
     });
   }, []);
-
-  /* -------- Actions -------- */
 
   const addEntry = async (data: EntryFormData) => {
     startTransition(async () => {
@@ -132,20 +135,36 @@ export function JournalProvider({ children }: { children: React.ReactNode }) {
 
       if (res.success) {
         dispatch({ type: "ADD_ENTRY", payload: res.data });
+        toast.success("Entry added", {
+          description: "Your thoughts have been saved.",
+        });
       } else {
         dispatch({ type: "LOAD_ERROR", payload: res.error });
+        toast.error("Entry not added!", {
+          description: res.error,
+        });
       }
     });
   };
 
   const updateEntryHandler = async (data: EntryFormData) => {
     startTransition(async () => {
-      const res = await updateEntry({ ...data, date: new Date(data.date) });
+      try {
+        const res = await updateEntry({ ...data, date: new Date(data.date) });
 
-      if (res.success) {
-        dispatch({ type: "UPDATE_ENTRY", payload: res.data });
-      } else {
-        dispatch({ type: "LOAD_ERROR", payload: res.error });
+        if (res.success) {
+          dispatch({ type: "UPDATE_ENTRY", payload: res.data });
+          toast.success("Entry updated", {
+            description: "Your changes were saved.",
+          });
+        } else {
+          throw new Error(res.error ?? "Failed to update entry");
+        }
+      } catch (error) {
+        dispatch({ type: "LOAD_ERROR", payload: (error as Error).message });
+        toast.error("Entry not updated!", {
+          description: (error as Error).message,
+        });
       }
     });
   };
@@ -155,8 +174,31 @@ export function JournalProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: "DELETE_ENTRY", payload: id });
 
       const res = await deleteEntry(id);
-      if (!res.success) {
+      if (res.success) {
+        toast("Entry deleted", {
+          description: "You can undo this action.",
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              if (res.data) {
+                const resp = await createEntry(res.data, res.data.id);
+                if (!resp.success) {
+                  toast.error("Failed to restore entry", {
+                    description: resp.error,
+                  });
+                  return;
+                }
+                dispatch({ type: "ADD_ENTRY", payload: res.data });
+                toast.success("Entry restored");
+              }
+            },
+          },
+        });
+      } else {
         dispatch({ type: "LOAD_ERROR", payload: res.error });
+        toast.error("Failed to delete entry", {
+          description: res.error,
+        });
       }
     });
   };
@@ -166,6 +208,11 @@ export function JournalProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: "TOGGLE_FAVORITE", payload: id });
 
       const res = await toggleFavorite(id);
+
+      toast(res.success ? "Removed from favourites" : "Added to favourites", {
+        icon: res.success ? "💔" : "❤️",
+      });
+
       if (!res.success) {
         dispatch({ type: "LOAD_ERROR", payload: res.error });
       }

@@ -2,7 +2,9 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Edit, Trash } from "lucide-react";
+import { Edit, Trash, Loader2 } from "lucide-react";
+import { useState } from "react";
+
 import { useJournal } from "@/lib/hooks/use-journal";
 import { Button } from "@/components/ui/button";
 import { UnstyledLink } from "../shared";
@@ -26,15 +28,24 @@ const EntryView = ({ id }: Props) => {
   const { getEntry, deleteEntry } = useJournal();
   const router = useRouter();
 
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [open, setOpen] = useState(false);
+
   const entry = getEntry(id);
 
   if (!entry) return <div className="p-10">Entry not found</div>;
 
   const { title, date, content, coverImage } = entry;
 
-  const handleDelete = () => {
-    deleteEntry(id);
-    router.push("/dashboard/entries");
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
+      await deleteEntry(id);
+      router.push("/dashboard/entries");
+    } finally {
+      setIsDeleting(false);
+      setOpen(false);
+    }
   };
 
   return (
@@ -48,7 +59,7 @@ const EntryView = ({ id }: Props) => {
           }
           alt="Cover"
           fill
-          className="object-cover aspect-video w-full h-full"
+          className="object-cover"
           priority
         />
       </div>
@@ -60,7 +71,7 @@ const EntryView = ({ id }: Props) => {
           <h1 className="h2">{title}</h1>
 
           <div className="flex items-center gap-3">
-            {/* Edit button */}
+            {/* Edit */}
             <Button variant="ghost" size="sm" asChild>
               <UnstyledLink href={`/dashboard/entries/edit/${id}`}>
                 <Edit className="h-4 w-4 mr-2" />
@@ -68,8 +79,8 @@ const EntryView = ({ id }: Props) => {
               </UnstyledLink>
             </Button>
 
-            {/* Delete button - Shadcn dialog */}
-            <AlertDialog>
+            {/* Delete */}
+            <AlertDialog open={open} onOpenChange={setOpen}>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" size="sm">
                   <Trash className="h-4 w-4 mr-2" />
@@ -81,15 +92,22 @@ const EntryView = ({ id }: Props) => {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete this entry?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. Your journal entry will be
-                    permanently removed.
+                    This action is permanent and cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
 
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete}>
-                    Delete
+                  <AlertDialogCancel disabled={isDeleting}>
+                    Cancel
+                  </AlertDialogCancel>
+
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="gap-2"
+                  >
+                    {isDeleting && <Loader2 className="h-4 w-4 animate-spin" />}
+                    {isDeleting ? "Deleting..." : "Delete"}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
