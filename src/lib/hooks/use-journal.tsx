@@ -24,11 +24,11 @@ import type { Entry } from "@/generated/prisma/client";
 
 type JournalState = {
   entries: Entry[];
-  isLoading: boolean;
   error: string | null;
 };
 
 type JournalContextType = JournalState & {
+  isLoading: boolean;
   addEntry: (data: EntryFormData) => Promise<void>;
   updateEntry: (data: EntryFormData) => Promise<void>;
   deleteEntry: (id: string) => Promise<void>;
@@ -37,7 +37,6 @@ type JournalContextType = JournalState & {
 };
 
 type Action =
-  | { type: "LOAD_START" }
   | { type: "LOAD_SUCCESS"; payload: Entry[] }
   | { type: "LOAD_ERROR"; payload: string }
   | { type: "ADD_ENTRY"; payload: Entry }
@@ -51,14 +50,11 @@ type Action =
 
 function journalReducer(state: JournalState, action: Action): JournalState {
   switch (action.type) {
-    case "LOAD_START":
-      return { ...state, isLoading: true, error: null };
-
     case "LOAD_SUCCESS":
-      return { entries: action.payload, isLoading: false, error: null };
+      return { entries: action.payload, error: null };
 
     case "LOAD_ERROR":
-      return { ...state, isLoading: false, error: action.payload };
+      return { ...state, error: action.payload };
 
     case "ADD_ENTRY":
       return { ...state, entries: [action.payload, ...state.entries] };
@@ -103,17 +99,14 @@ const JournalContext = createContext<JournalContextType | null>(null);
 export function JournalProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(journalReducer, {
     entries: [],
-    isLoading: true,
     error: null,
   });
 
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
 
   /* -------- Load entries -------- */
 
   useEffect(() => {
-    dispatch({ type: "LOAD_START" });
-
     startTransition(async () => {
       const res = await getEntries();
 
@@ -131,47 +124,52 @@ export function JournalProvider({ children }: { children: React.ReactNode }) {
   /* -------- Actions -------- */
 
   const addEntry = async (data: EntryFormData) => {
-    const res = await createEntry({
-      ...data,
-      date: new Date(data.date),
+    startTransition(async () => {
+      const res = await createEntry({
+        ...data,
+        date: new Date(data.date),
+      });
+
+      if (res.success) {
+        dispatch({ type: "ADD_ENTRY", payload: res.data });
+      } else {
+        dispatch({ type: "LOAD_ERROR", payload: res.error });
+      }
     });
-
-    console.log("createEntry res:", res);
-
-    if (res.success) {
-      dispatch({ type: "ADD_ENTRY", payload: res.data });
-    } else {
-      dispatch({ type: "LOAD_ERROR", payload: res.error });
-    }
   };
 
   const updateEntryHandler = async (data: EntryFormData) => {
-    console.log({ "updateEntry data": data });
-    const res = await updateEntry({ ...data, date: new Date(data.date) });
+    startTransition(async () => {
+      const res = await updateEntry({ ...data, date: new Date(data.date) });
 
-    if (res.success) {
-      dispatch({ type: "UPDATE_ENTRY", payload: res.data });
-    } else {
-      dispatch({ type: "LOAD_ERROR", payload: res.error });
-    }
+      if (res.success) {
+        dispatch({ type: "UPDATE_ENTRY", payload: res.data });
+      } else {
+        dispatch({ type: "LOAD_ERROR", payload: res.error });
+      }
+    });
   };
 
   const deleteEntryHandler = async (id: string) => {
-    dispatch({ type: "DELETE_ENTRY", payload: id });
+    startTransition(async () => {
+      dispatch({ type: "DELETE_ENTRY", payload: id });
 
-    const res = await deleteEntry(id);
-    if (!res.success) {
-      dispatch({ type: "LOAD_ERROR", payload: res.error });
-    }
+      const res = await deleteEntry(id);
+      if (!res.success) {
+        dispatch({ type: "LOAD_ERROR", payload: res.error });
+      }
+    });
   };
 
   const toggleFavoriteHandler = async (id: string) => {
-    dispatch({ type: "TOGGLE_FAVORITE", payload: id });
+    startTransition(async () => {
+      dispatch({ type: "TOGGLE_FAVORITE", payload: id });
 
-    const res = await toggleFavorite(id);
-    if (!res.success) {
-      dispatch({ type: "LOAD_ERROR", payload: res.error });
-    }
+      const res = await toggleFavorite(id);
+      if (!res.success) {
+        dispatch({ type: "LOAD_ERROR", payload: res.error });
+      }
+    });
   };
 
   const getEntry = (id: string): Entry | null =>
@@ -181,6 +179,7 @@ export function JournalProvider({ children }: { children: React.ReactNode }) {
     <JournalContext.Provider
       value={{
         ...state,
+        isLoading: isPending,
         addEntry,
         updateEntry: updateEntryHandler,
         deleteEntry: deleteEntryHandler,

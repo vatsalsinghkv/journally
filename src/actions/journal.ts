@@ -9,13 +9,9 @@ export type ActionResult<T> =
   | { success: true; data: T }
   | { success: false; error: string };
 
-/* -------------------- ACTIONS -------------------- */
-
 export async function getEntries(): Promise<ActionResult<Entry[]>> {
   try {
     const user = await getServerUser();
-
-    console.log({ "action user": user });
 
     if (!user) {
       throw new Error("Unauthorized");

@@ -21,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 interface Props {
   mode: "create" | "edit";
@@ -29,7 +30,7 @@ interface Props {
 }
 
 export default function EntryForm({ mode, id, selectedDate }: Props) {
-  const { addEntry, updateEntry, getEntry } = useJournal();
+  const { addEntry, updateEntry, getEntry, isLoading } = useJournal();
   const router = useRouter();
 
   const today = new Date().toISOString().slice(0, 10);
@@ -158,6 +159,9 @@ export default function EntryForm({ mode, id, selectedDate }: Props) {
           />
 
           <Button type="submit" className="w-full">
+            {isLoading ? (
+              <Loader2 className="animate-spin w-5 h-5 mr-1" />
+            ) : null}
             {mode === "create" ? "Create Entry" : "Save Changes"}
           </Button>
         </form>
