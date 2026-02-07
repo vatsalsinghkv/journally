@@ -27,6 +27,8 @@ type JournalState = {
 
 // * Class Like structure
 
+const pendingDeletes = new Map<string, NodeJS.Timeout>();
+
 export const useJournal = create<JournalState>((set, get) => ({
   // * Properties
   entries: [],
@@ -116,56 +118,49 @@ export const useJournal = create<JournalState>((set, get) => ({
     }
   },
 
-  async deleteEntry(id) {
+  async deleteEntry(id: string) {
     set({ error: null });
+
     const previous = get().entries;
+    const entryToDelete = previous.find((e) => e.id === id);
+    if (!entryToDelete) return;
 
-    try {
-      // optimistic UI
-      set((state) => ({
-        entries: state.entries.filter((e) => e.id !== id),
-      }));
+    // 1 Optimistic UI
+    set((state) => ({
+      entries: state.entries.filter((e) => e.id !== id),
+    }));
 
-      const res = await deleteEntry(id);
-
-      if (!res.success) {
-        throw new Error(res.error);
+    // 2 Schedule actual delete
+    const timeout = setTimeout(async () => {
+      try {
+        const res = await deleteEntry(id);
+        if (!res.success) throw new Error(res.error);
+      } catch (err) {
+        // rollback if API fails
+        set({ entries: previous });
+        toast.error("Failed to delete entry", {
+          description: (err as Error).message,
+        });
+      } finally {
+        pendingDeletes.delete(id);
       }
+    }, 5000); // 5s undo window
 
-      toast("Entry deleted", {
-        description: "You can undo this action.",
-        action: {
-          label: "Undo",
-          onClick: async () => {
-            set({ entries: previous });
+    pendingDeletes.set(id, timeout);
 
-            if (res.data) {
-              const resp = await createEntry(res.data, res.data.id);
-
-              if (!resp.success) {
-                toast.error("Failed to restore entry", {
-                  description: resp.error,
-                });
-
-                return set({
-                  entries: previous.filter((e) => e.id !== res.data?.id),
-                });
-              }
-
-              toast.success("Entry restored");
-            }
-          },
+    // 3 Toast with Undo
+    toast("Entry deleted", {
+      description: "Undo within 5 seconds",
+      action: {
+        label: "Undo",
+        onClick: () => {
+          clearTimeout(timeout);
+          pendingDeletes.delete(id);
+          set({ entries: previous });
+          toast.success("Entry restored");
         },
-      });
-    } catch (error) {
-      set({
-        entries: previous,
-        error: (error as Error).message ?? "Failed to delete entry",
-      });
-      toast.error("Failed to delete entry", {
-        description: (error as Error).message,
-      });
-    }
+      },
+    });
   },
 
   async toggleFavorite(id) {
