@@ -43,7 +43,7 @@ export const useJournal = create<JournalState>((set, get) => ({
       // * Guard Clause |  Makes code flat by reducing nesting
 
       if (!res.success) {
-        throw new Error(res.error ?? "Failed to load journal entries");
+        throw new Error(res.error);
       }
 
       set({ entries: res.data, error: null, isLoading: false });
@@ -63,7 +63,7 @@ export const useJournal = create<JournalState>((set, get) => ({
 
       const res = await createEntry({ ...data, date: new Date(data.date) });
 
-      if (!res.success) throw new Error(res.error ?? "Failed to add entry");
+      if (!res.success) throw new Error(res.error);
 
       set((state) => ({
         entries: [res.data, ...state.entries],
@@ -79,7 +79,9 @@ export const useJournal = create<JournalState>((set, get) => ({
         error: (error as Error).message ?? "Failed to add entry",
         isLoading: false,
       });
-      toast.error("Failed to add entry");
+      toast.error("Failed to add entry", {
+        description: (error as Error).message,
+      });
     }
   },
 
@@ -89,7 +91,7 @@ export const useJournal = create<JournalState>((set, get) => ({
       const res = await updateEntry({ ...data, date: new Date(data.date) });
 
       if (!res.success) {
-        throw new Error(res.error ?? "Failed to update entry");
+        throw new Error(res.error);
       }
 
       set((state) => ({
@@ -108,7 +110,9 @@ export const useJournal = create<JournalState>((set, get) => ({
         error: (error as Error).message ?? "Failed to update entry",
         isLoading: false,
       });
-      toast.error("Failed to update entry");
+      toast.error("Failed to update entry", {
+        description: (error as Error).message,
+      });
     }
   },
 
@@ -125,17 +129,41 @@ export const useJournal = create<JournalState>((set, get) => ({
       const res = await deleteEntry(id);
 
       if (!res.success) {
-        throw new Error(res.error ?? "Failed to delete entry");
+        throw new Error(res.error);
       }
 
-      toast.success("Entry deleted");
+      toast("Entry deleted", {
+        description: "You can undo this action.",
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            set({ entries: previous });
+
+            if (res.data) {
+              const resp = await createEntry(res.data, res.data.id);
+
+              if (!resp.success) {
+                toast.error("Failed to restore entry", {
+                  description: resp.error,
+                });
+
+                return set({
+                  entries: previous.filter((e) => e.id !== res.data?.id),
+                });
+              }
+
+              toast.success("Entry restored");
+            }
+          },
+        },
+      });
     } catch (error) {
       set({
         entries: previous,
         error: (error as Error).message ?? "Failed to delete entry",
       });
       toast.error("Failed to delete entry", {
-        description: res.error,
+        description: (error as Error).message,
       });
     }
   },
@@ -146,7 +174,7 @@ export const useJournal = create<JournalState>((set, get) => ({
       const res = await toggleFavorite(id);
 
       if (!res.success) {
-        throw new Error(res.error ?? "Failed to toggle favorite");
+        throw new Error(res.error);
       }
 
       set((state) => ({
@@ -160,6 +188,10 @@ export const useJournal = create<JournalState>((set, get) => ({
       set({
         error: (error as Error).message ?? "Failed to toggle favorite",
         isLoading: false,
+      });
+
+      toast.error("Failed to toggle favorite", {
+        description: (error as Error).message,
       });
     }
   },
