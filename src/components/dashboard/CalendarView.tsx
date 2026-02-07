@@ -8,7 +8,7 @@ import { getDaysInMonth } from "@/lib/utils";
 import { getLocalDateKey } from "@/lib/utils";
 
 export default function CalendarView() {
-  const { entries } = useJournal();
+  const entries = useJournal((s) => s.entries);
 
   const [currentMonth, setCurrentMonth] = useState(() => {
     const d = new Date();

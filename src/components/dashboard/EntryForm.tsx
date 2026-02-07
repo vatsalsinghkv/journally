@@ -30,8 +30,11 @@ interface Props {
 }
 
 export default function EntryForm({ mode, id, selectedDate }: Props) {
-  const { addEntry, updateEntry, getEntry, isLoading } = useJournal();
   const router = useRouter();
+  const addEntry = useJournal((s) => s.addEntry);
+  const updateEntry = useJournal((s) => s.updateEntry);
+  const getEntry = useJournal((s) => s.getEntry);
+  const isLoading = useJournal((s) => s.isLoading);
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -61,7 +64,7 @@ export default function EntryForm({ mode, id, selectedDate }: Props) {
     }
   }, [mode, id, getEntry, form]);
 
-  function onSubmit(values: EntryFormData) {
+  async function onSubmit(values: EntryFormData) {
     const finalDate = new Date(values.date);
 
     const entryPayload = {
@@ -74,9 +77,9 @@ export default function EntryForm({ mode, id, selectedDate }: Props) {
     };
 
     if (mode === "create") {
-      addEntry(entryPayload);
+      await addEntry(entryPayload);
     } else {
-      updateEntry(entryPayload);
+      await updateEntry(entryPayload);
     }
 
     router.push("/dashboard/entries");
@@ -158,11 +161,17 @@ export default function EntryForm({ mode, id, selectedDate }: Props) {
             )}
           />
 
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? (
-              <Loader2 className="animate-spin w-5 h-5 mr-1" />
-            ) : null}
-            {mode === "create" ? "Create Entry" : "Save Changes"}
+              <>
+                <Loader2 className="animate-spin w-5 h-5 mr-1" />
+                {mode === "create" ? "Creating..." : "Saving..."}
+              </>
+            ) : mode === "create" ? (
+              "Create Entry"
+            ) : (
+              "Save Changes"
+            )}
           </Button>
         </form>
       </Form>

@@ -6,7 +6,13 @@ import Loader from "@/components/shared/Loader";
 import { useJournal } from "@/lib/hooks/use-journal";
 
 export default function EntriesPage() {
-  const { entries, isLoading } = useJournal();
+  const entries = useJournal((s) => s.entries);
+  const isLoading = useJournal((s) => s.isLoading);
+
+  // // * Fetching Initial Entries
+  // useEffect(() => {
+  //   fetchEntries();
+  // }, [fetchEntries]);
 
   if (isLoading) {
     return <Loader />;

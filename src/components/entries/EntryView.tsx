@@ -25,7 +25,9 @@ interface Props {
 }
 
 const EntryView = ({ id }: Props) => {
-  const { getEntry, deleteEntry } = useJournal();
+  const getEntry = useJournal((s) => s.getEntry);
+  const deleteEntry = useJournal((s) => s.deleteEntry);
+
   const router = useRouter();
 
   const [isDeleting, setIsDeleting] = useState(false);

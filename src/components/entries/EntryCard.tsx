@@ -22,7 +22,7 @@ export default function EntryCard({
   className,
   ...props
 }: Props) {
-  const { toggleFavorite } = useJournal();
+  const toggleFavorite = useJournal((s) => s.toggleFavorite);
 
   function handleFavClick(e: React.MouseEvent) {
     e.preventDefault();

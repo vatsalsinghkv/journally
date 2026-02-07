@@ -5,7 +5,7 @@ import { ErrorUI } from "@/components/shared";
 import { useJournal } from "@/lib/hooks/use-journal";
 
 export default function FavoriteEntriesPage() {
-  const { entries } = useJournal();
+  const entries = useJournal((s) => s.entries);
 
   console.log({ entries });
   const favouriteEntries = entries.filter((entry) => entry.isFavorite);
